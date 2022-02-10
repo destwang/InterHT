@@ -346,15 +346,15 @@ class KGEModel(nn.Module):
         re_head, re_mid, re_tail = torch.chunk(relation, 3, dim=2)
         a_tail, b_tail = torch.chunk(tail, 2, dim=2)
 
-        e_h = torch.ones_like(re_head)
-        e_t = torch.ones_like(re_tail)
+        e_h = torch.ones_like(b_head)
+        e_t = torch.ones_like(b_tail)
 
         a_head = F.normalize(a_head, 2, -1)
         a_tail = F.normalize(a_tail, 2, -1)
         b_head = F.normalize(b_head, 2, -1)
         b_tail = F.normalize(b_tail, 2, -1)
         b_head = b_head + self.u * e_h
-        b_tail = b_tail + self.u * e_h
+        b_tail = b_tail + self.u * e_t
 
         score = a_head * b_tail - a_tail * b_head + re_mid
         score = self.gamma.item() - torch.norm(score, p=1, dim=2)
