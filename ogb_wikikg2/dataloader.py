@@ -9,7 +9,7 @@ from torch.utils.data import Dataset
 
 
 class TrainDataset(Dataset):
-    def __init__(self, triples, nentity, nrelation, negative_sample_size, mode, count, true_head, true_tail):
+    def __init__(self, triples, nentity, nrelation, negative_sample_size, mode, count, true_head, true_tail, index_warp=None):
         self.len = len(triples['head'])
         self.triples = triples
         self.nentity = nentity
@@ -19,6 +19,7 @@ class TrainDataset(Dataset):
         self.count = count
         self.true_head = true_head
         self.true_tail = true_tail
+        self.index_warp = index_warp
 
     def __len__(self):
         return self.len
@@ -30,36 +31,9 @@ class TrainDataset(Dataset):
         subsampling_weight = self.count[(head, relation)] + self.count[(tail, -relation - 1)]
         subsampling_weight = torch.sqrt(1 / torch.Tensor([subsampling_weight]))
 
-        # negative_sample_list = []
-        # negative_sample_size = 0
-
-        # while negative_sample_size < self.negative_sample_size:
-        #     negative_sample = np.random.randint(self.nentity, size=self.negative_sample_size*2)
-        #     if self.mode == 'head-batch':
-        #         mask = np.in1d(
-        #             negative_sample,
-        #             self.true_head[(relation, tail)],
-        #             assume_unique=True,
-        #             invert=True
-        #         )
-        #     elif self.mode == 'tail-batch':
-        #         mask = np.in1d(
-        #             negative_sample,
-        #             self.true_tail[(head, relation)],
-        #             assume_unique=True,
-        #             invert=True
-        #         )
-        #     else:
-        #         raise ValueError('Training batch mode %s not supported' % self.mode)
-        #     negative_sample = negative_sample[mask]
-        #     negative_sample_list.append(negative_sample)
-        #     negative_sample_size += negative_sample.size
-
-        # negative_sample = np.concatenate(negative_sample_list)[:self.negative_sample_size]
-
-        # negative_sample = torch.from_numpy(negative_sample)
-        # negative_sample = torch.from_numpy(np.random.randint(self.nentity, size=self.negative_sample_size))
         negative_sample = torch.randint(0, self.nentity, (self.negative_sample_size,))
+        if self.index_warp is not None:
+            negative_sample = self.index_warp[negative_sample]
         positive_sample = torch.LongTensor(positive_sample)
 
         return positive_sample, negative_sample, subsampling_weight, self.mode
