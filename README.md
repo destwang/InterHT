@@ -18,6 +18,11 @@ python create_for_digpiece_neighbors.py
 sh run_ogb_plus.sh
 ```
 
+InterHT+ (256dim):
+```bash
+sh run_ogb_plus_256dim.sh
+```
+
 InterHT:
 ```bash
 sh run_ogb.sh
